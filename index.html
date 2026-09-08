@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#101110" />
+  <meta name="description" content="Aman Buttar — independent video editor and visual storyteller. Cinematic editing, color grading, sound design, and motion graphics." />
+  <title>Aman Buttar — Video Editor & Visual Storyteller</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;450;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #101110;
+      --surface: #191b18;
+      --text: #f0f0e8;
+      --muted: #a0a39a;
+      --accent: #d8f36a;
+      --line: rgba(240, 240, 232, .15);
+      --ease: cubic-bezier(.22, 1, .36, 1);
+      --gutter: clamp(22px, 5vw, 88px);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; scroll-padding-top: 95px; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body.locked { overflow: hidden; }
+    ::selection { background: var(--accent); color: var(--bg); }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; cursor: pointer; border: 0; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible, video:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 6px;
+    }
+    img { display: block; width: 100%; }
+    svg { width: 20px; height: 20px; }
+    h1, h2, h3, p { margin: 0; }
+    .container { padding-inline: var(--gutter); }
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .muted { color: var(--muted); }
+    .arrow { display: inline-block; transition: transform .4s var(--ease); }
+    a:hover .arrow, button:hover .arrow { transform: translate(3px, -3px); }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Navigation */
+    .header {
+      position: absolute;
+      z-index: 20;
+      inset: 0 0 auto;
+      padding: 29px var(--gutter);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.16);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-family: "Manrope", sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -.7px;
+    }
+    .logo-mark {
+      width: 27px;
+      height: 29px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      transform: skew(-17deg);
+    }
+    .logo-mark i { background: var(--accent); }
+    .logo-mark i:nth-child(2) { height: 75%; align-self: end; }
+    .logo-mark i:nth-child(3) { height: 50%; align-self: end; }
+    .nav { display: flex; gap: 34px; align-items: center; }
+    .nav a { font-size: 12px; color: #d5d6cc; transition: color .25s; }
+    .nav a:hover { color: var(--accent); }
+    .nav .contact-link { color: var(--text); }
+    .contact-link span { margin-left: 12px; }
+    .menu-toggle { display: none; background: transparent; padding: 8px; }
+
+    /* Hero */
+    .hero {
+      min-height: 800px;
+      height: min(960px, 100svh);
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    .hero-visual {
+      position: absolute;
+      inset: -6% 0;
+      z-index: -3;
+      will-change: transform;
+    }
+    .hero-poster {
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 54%;
+      filter: brightness(.65) saturate(.65);
+      animation: image-enter 2s var(--ease) both;
+    }
+    .hero-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 54%;
+      filter: brightness(.65) saturate(.65);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1.2s var(--ease);
+    }
+    .hero-video.is-ready { opacity: 1; }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: linear-gradient(
+        180deg,
+        rgba(9,15,12,.25),
+        rgba(9,15,12,.05) 30%,
+        rgba(9,15,12,.6) 72%,
+        var(--bg)
+      );
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      opacity: .045;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='white' filter='url(%23n)' opacity='.9' d='M0 0h180v180H0z'/%3E%3C/svg%3E");
+    }
+    .hero-content { padding-top: 170px; padding-bottom: 68px; }
+    .hero-label {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 28px;
+      animation: rise 1s .1s var(--ease) both;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 18px #d8f35570;
+    }
+    h1 {
+      font-family: "Manrope", sans-serif;
+      font-size: clamp(64px, 9.5vw, 154px);
+      font-weight: 500;
+      line-height: .99;
+      letter-spacing: -.075em;
+    }
+    .title-line { display: block; overflow: hidden; padding-bottom: .1em; }
+    .title-line > span {
+      display: block;
+      animation: title-enter 1.3s .15s var(--ease) both;
+    }
+    .title-line:nth-child(2) > span { animation-delay: .28s; }
+    h1 em { color: var(--accent); font-weight: 500; font-style: normal; }
+    .hero-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 32px;
+      margin-top: 32px;
+      animation: rise 1s .6s var(--ease) both;
+    }
+    .hero-description {
+      max-width: 325px;
+      color: #cccec4;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .reel-button {
+      display: flex;
+      align-items: center;
+      gap: 17px;
+      padding: 0;
+      background: transparent;
+      text-align: left;
+    }
+    .play-circle {
+      width: 62px;
+      height: 62px;
+      border: 1px solid rgba(255,255,255,.5);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.04);
+      backdrop-filter: blur(10px);
+      transition: background .4s, color .4s, border-color .4s;
+    }
+    .reel-button:hover .play-circle {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+    .play-circle svg { width: 15px; margin-left: 3px; }
+    .reel-copy { display: grid; gap: 7px; font-size: 12px; }
+    .reel-copy small { font-size: 10px; color: var(--muted); }
+    .hero-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding-block: 23px;
+      border-top: 1px solid var(--line);
+      color: #b1b5aa;
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .hero-footer a { display: flex; align-items: center; gap: 14px; }
+    .hero-footer a span { font-size: 16px; }
+    .hero-footer-end { display: flex; align-items: center; gap: 20px; }
+    .hero-motion-toggle {
+      padding: 5px 0;
+      background: transparent;
+      color: inherit;
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(244, 243, 240, .16);
+      transition: color .25s;
+    }
+    .hero-motion-toggle:hover { color: var(--accent); }
+
+    /* Selected work */
+    .work { padding-block: 108px 116px; }
+    .section-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 43px;
+    }
+    .section-heading .eyebrow { margin-bottom: 20px; color: var(--muted); }
+    h2 {
+      font-family: "Manrope", sans-serif;
+      font-size: clamp(36px, 4.6vw, 66px);
+      font-weight: 500;
+      line-height: 1.12;
+      letter-spacing: -.055em;
+    }
+    .count {
+      font-size: 12px;
+      letter-spacing: 0;
+      vertical-align: top;
+      margin-left: 9px;
+      color: var(--accent);
+    }
+    .filters { display: flex; gap: 7px; flex-wrap: wrap; padding-bottom: 5px; }
+    .filter {
+      background: transparent;
+      padding: 10px 17px;
+      border: 1px solid var(--line);
+      border-radius: 100px;
+      color: var(--muted);
+      font-size: 11px;
+      transition: background .25s, color .25s, border-color .25s;
+    }
+    .filter:hover { border-color: var(--muted); color: var(--text); }
+    .filter.active { background: var(--text); border-color: var(--text); color: var(--bg); }
+    .project-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 45px 25px; }
+    .project { min-width: 0; }
+    .project-button {
+      position: relative;
+      display: block;
+      width: 100%;
+      padding: 0;
+      overflow: hidden;
+      background: var(--surface);
+      aspect-ratio: 1.57;
+      text-align: left;
+      border-radius: 3px;
+      isolation: isolate;
+    }
+    .project-button::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent 45%, rgba(0,0,0,.45));
+      pointer-events: none;
+    }
+    .project-button img {
+      height: 100%;
+      object-fit: cover;
+      transition: transform 1s var(--ease), filter 1s;
+      filter: saturate(.7) brightness(.85);
+    }
+    .project-button:hover img {
+      transform: scale(1.055);
+      filter: saturate(.95) brightness(.95);
+    }
+    .project-tag {
+      position: absolute;
+      top: 19px;
+      left: 19px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 3px;
+      backdrop-filter: blur(15px);
+      background: #0002;
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .project-number {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1;
+      font-size: 10px;
+      letter-spacing: .08em;
+    }
+    .project-play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -40%);
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--bg);
+      opacity: 0;
+      transition: opacity .35s, transform .5s var(--ease);
+      z-index: 2;
+    }
+    .project-play svg { width: 16px; margin-left: 3px; }
+    .project-button:hover .project-play,
+    .project-button:focus-visible .project-play {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+    .project-info {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding-top: 18px;
+      align-items: center;
+    }
+    .project-info h3 { font-size: 19px; font-weight: 500; letter-spacing: -.5px; }
+    .project-info p { font-size: 10px; color: var(--muted); margin-top: 7px; }
+    .project-info > span { font-size: 21px; color: #b5b8ac; }
+    .work-note { margin-top: 35px; text-align: center; font-size: 11px; color: var(--muted); }
+
+    /* About */
+    .about {
+      padding-block: 100px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: .82fr 1fr;
+      gap: clamp(45px, 10vw, 155px);
+      align-items: center;
+    }
+    .portrait { position: relative; }
+    .portrait img {
+      aspect-ratio: .96;
+      object-fit: cover;
+      filter: grayscale(100%) brightness(.8);
+      border-radius: 3px;
+    }
+    .portrait-label {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .about-copy .eyebrow { color: var(--accent); margin-bottom: 25px; }
+    .about-copy h2 { font-size: clamp(36px, 4vw, 57px); }
+    .about-copy > p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.9;
+      margin-top: 25px;
+      max-width: 440px;
+    }
+    .services { margin-top: 32px; border-top: 1px solid var(--line); }
+    .service {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 17px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+    .service span { color: var(--muted); font-size: 9px; }
+    .service i { margin-left: auto; color: var(--accent); font-style: normal; }
+    .tools { margin-top: 25px; display: flex; flex-wrap: wrap; gap: 18px; color: var(--muted); font-size: 9px; }
+
+    /* Process */
+    .process { border-top: 1px solid var(--line); padding-block: 83px 95px; }
+    .process-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 30px;
+      margin-bottom: 45px;
+    }
+    .process-top h2 { font-size: clamp(30px, 3.2vw, 46px); }
+    .process-top > p { max-width: 275px; font-size: 12px; line-height: 1.8; color: var(--muted); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 35px; }
+    .step { border-top: 1px solid var(--line); padding-top: 22px; }
+    .step > span { color: var(--accent); font-size: 10px; }
+    .step h3 { font-size: 18px; font-weight: 500; margin: 26px 0 12px; letter-spacing: -.4px; }
+    .step p { max-width: 300px; font-size: 12px; line-height: 1.8; color: var(--muted); }
+
+    /* Testimonials */
+    .testimonials { padding-block: 85px 95px; border-top: 1px solid var(--line); }
+    .testimonials-intro { max-width: 270px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+    .testimonial-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 25px; }
+    .testimonial-card { min-width: 0; }
+    .testimonial-card:only-child {
+      grid-column: 1 / -1;
+      width: min(100%, 780px);
+      justify-self: center;
+    }
+    .testimonial-media {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      background: #171a16;
+      isolation: isolate;
+    }
+    .testimonial-video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #080908;
+      visibility: hidden;
+    }
+    .testimonial-media.is-ready .testimonial-video { visibility: visible; }
+    .testimonial-placeholder {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      background:
+        radial-gradient(ellipse at 50% 35%, #d8f36a0b, transparent 65%),
+        linear-gradient(145deg, #20251e, #121410);
+      text-align: center;
+    }
+    .testimonial-placeholder::before {
+      content: "";
+      position: absolute;
+      inset: 15px;
+      border: 1px solid #f0f0e808;
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .testimonial-placeholder:focus-visible { outline-offset: -6px; }
+    .testimonial-index {
+      position: absolute;
+      top: 28px;
+      left: 28px;
+      color: var(--muted);
+      font-size: 8px;
+    }
+    .testimonial-play {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      margin-bottom: 23px;
+      border: 1px solid #d8f36a45;
+      border-radius: 50%;
+      color: var(--accent);
+      background: #d8f36a05;
+      transition: transform .5s var(--ease), background .4s, color .4s;
+    }
+    .testimonial-play svg { width: 14px; margin-left: 3px; }
+    .testimonial-placeholder:hover .testimonial-play {
+      transform: scale(1.08);
+      background: var(--accent);
+      color: var(--bg);
+    }
+    .testimonial-placeholder-copy {
+      font-family: "Manrope", sans-serif;
+      font-size: clamp(17px, 1.7vw, 24px);
+      letter-spacing: -.6px;
+    }
+    .testimonial-placeholder-copy small {
+      display: block;
+      margin-top: 11px;
+      color: var(--muted);
+      font-family: "DM Sans", sans-serif;
+      font-size: 10px;
+      letter-spacing: .02em;
+    }
+    .testimonial-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding-top: 19px;
+    }
+    .testimonial-meta h3 { font-size: 16px; font-weight: 500; letter-spacing: -.35px; }
+    .testimonial-meta p { margin-top: 7px; font-size: 10px; line-height: 1.6; color: var(--muted); }
+    .testimonial-meta > span { font-size: 10px; color: var(--accent); }
+    .testimonial-status { margin-top: 10px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .testimonial-status:empty { display: none; }
+
+    /* Contact */
+    .contact { padding-block: 87px 42px; background: var(--accent); color: var(--bg); }
+    .availability { display: flex; align-items: center; gap: 9px; font-size: 10px; }
+    .availability .dot { background: var(--bg); box-shadow: none; }
+    .contact-main { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin: 33px 0 62px; }
+    .contact h2 { font-size: clamp(48px, 8.3vw, 126px); line-height: 1.02; letter-spacing: -.07em; }
+    .contact-button {
+      width: 105px;
+      height: 105px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid #10111050;
+      border-radius: 50%;
+      font-size: 45px;
+      transition: color .35s, background .35s;
+    }
+    .contact-button:hover { background: var(--bg); color: var(--accent); }
+    .contact-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      border-top: 1px solid #10111030;
+      padding-top: 24px;
+    }
+    .email { font-size: clamp(16px, 2vw, 23px); letter-spacing: -.6px; overflow-wrap: anywhere; }
+    .copy-button {
+      background: transparent;
+      font-size: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #10111050;
+      flex-shrink: 0;
+    }
+    .contact a:focus-visible, .contact button:focus-visible { outline-color: var(--bg); }
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 25px;
+      padding-block: 28px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .footer a:hover { color: var(--text); }
+
+    /* Video dialog and project details */
+    .video-dialog {
+      width: min(1100px, 94vw);
+      padding: 0;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--text);
+      max-height: 92svh;
+      border-radius: 7px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: #515548 var(--bg);
+    }
+    .video-dialog::backdrop { background: rgba(0,0,0,.88); backdrop-filter: blur(14px); }
+    .video-dialog[open] { animation: dialog-enter .45s var(--ease); }
+    .dialog-header {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .dialog-header h2 { font: 500 14px "DM Sans", sans-serif; letter-spacing: 0; }
+    .dialog-close {
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-radius: 50%;
+      font-size: 21px;
+    }
+    .video-dialog > video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 70svh;
+      background: #000;
+      object-fit: contain;
+    }
+    .video-dialog.has-project > video { max-height: 56svh; }
+    .dialog-caption { padding: 15px 22px; font-size: 11px; line-height: 1.7; color: var(--muted); }
+    .project-details {
+      padding: 32px clamp(22px, 4vw, 48px) 42px;
+      border-top: 1px solid var(--line);
+      background:
+        radial-gradient(ellipse at 100% 0, #d8f36a06, transparent 65%),
+        var(--bg);
+    }
+    .project-details-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 17px;
+    }
+    .project-details-heading .eyebrow { color: var(--accent); font-size: 9px; }
+    .project-detail-category { color: var(--muted); font-size: 10px; }
+    .project-details > h3 {
+      font-family: "Manrope", sans-serif;
+      font-size: clamp(27px, 3.5vw, 43px);
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: -.055em;
+    }
+    .project-details-grid {
+      display: grid;
+      grid-template-columns: 1.7fr 1fr 1.15fr;
+      gap: 32px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+    .project-details h4 {
+      margin: 0 0 12px;
+      font-size: 9px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+    }
+    .project-details-grid p, .project-credits {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.85;
+    }
+    .project-credits > div + div { margin-top: 12px; }
+    .project-credits dt { font-size: 10px; color: var(--muted); }
+    .project-credits dd { margin: 2px 0 0; color: var(--text); }
+
+    /* Motion */
+    .js .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .9s var(--ease), transform .9s var(--ease);
+    }
+    .js .reveal.visible { opacity: 1; transform: translateY(0); }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes title-enter {
+      from { transform: translateY(115%); }
+      to { transform: translateY(0); }
+    }
+    @keyframes image-enter {
+      from { transform: scale(1.08); }
+      to { transform: scale(1); }
+    }
+    @keyframes dialog-enter {
+      from { opacity: 0; transform: translateY(20px) scale(.98); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @media (min-width: 1600px) {
+      .container { padding-inline: max(var(--gutter), calc((100vw - 1440px) / 2)); }
+    }
+    @media (max-width: 900px) {
+      .hero { min-height: 740px; max-height: 1000px; }
+      .section-heading { align-items: flex-start; flex-direction: column; }
+      .about { gap: 40px; grid-template-columns: 1fr 1.1fr; }
+      .portrait img { aspect-ratio: .75; }
+      .tools { gap: 12px; }
+    }
+    @media (max-width: 600px) {
+      .header { padding-block: 22px; }
+      .logo { font-size: 15px; }
+      .logo-mark { width: 23px; height: 25px; }
+      .menu-toggle { display: block; font-size: 12px; }
+      .nav {
+        display: none;
+        position: absolute;
+        top: 77px;
+        left: 0;
+        right: 0;
+        background: rgba(8, 9, 9, .56);
+        -webkit-backdrop-filter: blur(6px) saturate(125%);
+        backdrop-filter: blur(6px) saturate(125%);
+        padding: 30px var(--gutter);
+        border-bottom: 1px solid rgba(244, 243, 240, .16);
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 25px;
+      }
+      .nav.open { display: flex; }
+      .nav a { font-size: 18px; }
+      .hero { height: 100svh; min-height: 730px; }
+      .hero-content { padding-bottom: 35px; }
+      .hero-label { font-size: 8px; margin-bottom: 25px; }
+      h1 { font-size: clamp(56px, 12vw, 76px); }
+      .hero-bottom { flex-direction: column; align-items: flex-start; gap: 27px; }
+      .hero-description { font-size: 12px; max-width: 280px; }
+      .play-circle { width: 48px; height: 48px; }
+      .hero-footer { font-size: 8px; }
+      .hero-footer .location { display: none; }
+      .hero-footer-end { gap: 12px; }
+      .hero-motion-toggle { font-size: 8px; }
+      .hero-footer-end.has-control > span { display: none; }
+      .work { padding-block: 70px; }
+      .section-heading { margin-bottom: 28px; gap: 23px; }
+      .filter { padding: 9px 14px; font-size: 10px; }
+      .project-grid { grid-template-columns: 1fr; gap: 30px; }
+      .project-play {
+        width: 44px;
+        height: 44px;
+        opacity: 1;
+        transform: translate(-50%, -50%);
+        background: #f0f0e8e6;
+      }
+      .project-info h3 { font-size: 18px; }
+      .about { grid-template-columns: 1fr; padding-block: 65px; gap: 40px; }
+      .portrait img { aspect-ratio: 1.1; object-position: center 35%; }
+      .process { padding-block: 60px; }
+      .process-top { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .steps { grid-template-columns: 1fr; gap: 28px; }
+      .step h3 { margin-top: 17px; }
+      .step p { max-width: none; }
+      .testimonials { padding-block: 60px; }
+      .testimonial-grid { grid-template-columns: 1fr; gap: 30px; }
+      .testimonial-index { top: 23px; left: 23px; }
+      .contact { padding-block: 57px 28px; }
+      .contact-main { margin-block: 30px 40px; gap: 15px; }
+      .contact h2 { font-size: clamp(43px, 9.2vw, 60px); }
+      .contact-button { width: 59px; height: 59px; font-size: 28px; }
+      .footer { font-size: 9px; flex-wrap: wrap; gap: 16px; }
+      .project-details-grid { grid-template-columns: 1fr 1fr; gap: 25px 20px; }
+      .project-description { grid-column: 1 / -1; }
+      .project-detail-category { font-size: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: .01ms !important;
+      }
+      .js .reveal { opacity: 1; transform: none; }
+      .hero-visual { will-change: auto; }
+      .hero-video, .hero-motion-toggle { display: none !important; }
+    }
+
+    /* Studio direction: a restrained, editorial system tailored to Aman Buttar. */
+    :root {
+      --bg: #080909;
+      --surface: #131414;
+      --text: #f4f3f0;
+      --muted: #aaa9a5;
+      --accent: #f4f3f0;
+      --line: rgba(244, 243, 240, .18);
+      --gutter: clamp(24px, 4.8vw, 82px);
+    }
+    body { background: var(--bg); }
+    .eyebrow, .hero-footer, .nav a, .menu-toggle, .filter, .project-tag,
+    .project-number, .portrait-label, .availability, .step > span, .tools,
+    .copy-button, .reel-copy, .contact-link, .hero-motion-toggle {
+      font-family: "Space Mono", monospace;
+      letter-spacing: .12em;
+    }
+    .header {
+      padding-block: 23px;
+      border: 0;
+      align-items: flex-start;
+    }
+    .logo { gap: 0; font-size: 0; }
+    .logo-mark {
+      width: 48px;
+      height: 32px;
+      display: block;
+      position: relative;
+      transform: none;
+    }
+    .logo-mark::before, .logo-mark::after {
+      position: absolute;
+      top: 0;
+      color: var(--text);
+      font: 700 30px/.95 "Manrope", sans-serif;
+      letter-spacing: -.22em;
+    }
+    .logo-mark::before { content: "A"; left: 0; }
+    .logo-mark::after { content: "B"; left: 20px; }
+    .logo-mark i { display: none; }
+    .nav { position: absolute; left: 50%; transform: translateX(-50%); gap: clamp(23px, 3.2vw, 54px); }
+    .nav a { position: relative; color: #c2c1be; font-size: 11px; }
+    .nav a:hover, .nav a:focus-visible { color: var(--text); }
+    .nav a:first-child::after {
+      content: "";
+      position: absolute;
+      left: 50%; bottom: -15px;
+      width: 4px; height: 4px;
+      border-radius: 50%; background: var(--text);
+      transform: translateX(-50%);
+    }
+    .header-cta {
+      position: absolute;
+      right: var(--gutter);
+      top: 22px;
+      padding: 14px 20px;
+      border: 1px solid rgba(244,243,240,.75);
+      border-radius: 999px;
+      color: var(--text);
+      font-size: 10px;
+      font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      transition: background .35s var(--ease), color .35s var(--ease);
+    }
+    .header-cta:hover { background: var(--text); color: var(--bg); }
+    .header-cta .arrow { margin-left: 8px; }
+    .hero { min-height: 720px; height: max(720px, 100svh); }
+    .hero-visual { inset: -4% 0; }
+    .hero-poster, .hero-video {
+      object-position: center;
+      filter: brightness(.48) saturate(.55) contrast(1.08);
+    }
+    .hero-poster { filter: none; }
+    .hero::before {
+      background:
+        linear-gradient(90deg, rgba(2,3,3,.88) 0%, rgba(2,3,3,.64) 29%, rgba(2,3,3,.12) 64%, rgba(2,3,3,.32) 100%),
+        linear-gradient(0deg, #080909 0%, transparent 25%, rgba(0,0,0,.23) 100%);
+    }
+    .hero-content { padding-top: 125px; padding-bottom: clamp(76px, 12vh, 130px); }
+    .hero-label {
+      margin-bottom: 29px;
+      color: #deddd9;
+      font-family: "DM Mono", "Space Mono", monospace;
+      font-size: clamp(10px, .78vw, 13px);
+      font-weight: 400;
+      letter-spacing: .4em;
+    }
+    .hero-label .dot { display: none; }
+    h1 {
+      font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+      font-size: clamp(60px, 7.1vw, 112px);
+      font-weight: 800;
+      letter-spacing: -.07em;
+      line-height: .89;
+    }
+    .title-line:first-child > span {
+      color: transparent;
+      background: linear-gradient(90deg, #ffffff 0%, #e8e8e8 50%, #afafaf 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: none;
+    }
+    h1 em { color: var(--text); }
+    .title-line:nth-child(2) { margin-top: 20px; }
+    .title-line:nth-child(2) > span {
+      font: 500 clamp(12px, 1.35vw, 18px)/1 "Inter", "Helvetica Neue", Arial, sans-serif;
+      letter-spacing: .52em;
+    }
+    .hero-description { max-width: 375px; margin-top: 27px; color: #e1e0dc; font-size: 16px; line-height: 1.55; }
+    .hero-bottom { justify-content: flex-start; align-items: center; gap: 34px; margin-top: 42px; }
+    .view-work {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      padding: 18px 28px;
+      border-radius: 999px;
+      background: var(--text);
+      color: var(--bg);
+      font: 500 11px/1 "DM Mono", "Space Mono", monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      transition: transform .35s var(--ease), background .35s var(--ease);
+    }
+    .view-work:hover { transform: translateY(-3px); background: #d9d8d4; }
+    .reel-button { gap: 15px; }
+    .play-circle { width: 47px; height: 47px; background: transparent; border-color: rgba(244,243,240,.8); }
+    .reel-copy {
+      font-family: "DM Mono", "Space Mono", monospace;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+    .reel-copy small { display: none; }
+    .reel-button:hover .play-circle { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .hero-footer { padding-bottom: 40px; border: 0; color: #d1d0cc; font-size: 10px; }
+    .hero-footer > a { position: absolute; left: 50%; bottom: 31px; transform: translateX(-50%); flex-direction: column; gap: 8px; }
+    .hero-footer > a span { display: grid; width: 28px; height: 42px; place-items: end center; padding-bottom: 7px; border: 1px solid var(--line); border-radius: 20px; font-size: 14px; }
+    .hero-footer-end { text-align: right; }
+    .brand-manifesto {
+      display: block;
+      color: #cfcac0;
+      font: 600 clamp(19px, 1.7vw, 29px)/.76 "Caveat", cursive;
+      letter-spacing: -.045em;
+      text-transform: none;
+      transform: rotate(-4deg);
+      opacity: .72;
+    }
+    .nav a {
+      font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .work, .about, .process, .testimonials { border-color: var(--line); }
+    h2 { font-weight: 600; }
+    .filter { border-radius: 999px; padding: 11px 15px; }
+    .filter.active { background: var(--text); border-color: var(--text); }
+    .project-button, .portrait img, .testimonial-media { border-radius: 0; }
+    .project-button { aspect-ratio: 1.42; }
+    .project-button img { filter: saturate(.55) brightness(.78); }
+    .project-play { background: var(--text); }
+    .contact { background: #e8e5df; color: #0a0b0b; }
+    .contact .dot { background: #0a0b0b; }
+    .contact-button { border-color: rgba(10,11,11,.5); }
+    .contact-button:hover { background: #0a0b0b; color: #e8e5df; }
+    @media (max-width: 600px) {
+      .header { padding-top: 20px; align-items: center; }
+      .logo-mark { width: 43px; transform: scale(.85); transform-origin: left center; }
+      .menu-toggle { display: block; margin-left: auto; margin-right: 8px; font-family: "Space Mono", monospace; font-size: 9px; }
+      .nav { transform: none; left: 0; top: 70px; }
+      .header-cta { display: none; }
+      .nav a:first-child::after { display: none; }
+      .hero { min-height: 680px; }
+      .hero-content { padding-top: 100px; padding-bottom: 92px; transform: translateY(70px); }
+      h1 { font-size: clamp(54px, 16vw, 75px); }
+      .title-line:nth-child(2) > span { font-size: 10px; }
+      .hero-bottom { flex-direction: row; align-items: center; gap: 18px; }
+      .view-work { flex-shrink: 0; }
+      .reel-button { flex-shrink: 0; white-space: nowrap; }
+      .hero-visual { scale: .92; transform-origin: 35% 50%; }
+      .hero-poster { object-position: 35% center; }
+      .hero-description { font-size: 14px; }
+      .view-work { padding: 16px 20px; font-size: 9px; }
+      .hero-footer { padding-bottom: 27px; }
+      .hero-footer > a { display: none; }
+      .hero-footer .location { display: block; }
+      .brand-manifesto { font-size: 17px; }
+    }
+  </style>
+</head>
+
+<body id="top">
+  <header class="header">
+    <a class="logo" href="#top" aria-label="Aman Buttar home">
+      <span class="logo-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      aman buttar.
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation">
+      Menu +
+    </button>
+
+    <nav class="nav" id="navigation" aria-label="Main navigation">
+      <a href="#top">Home</a>
+      <a href="#work">Work</a>
+      <a href="#about">About</a>
+      <a href="#testimonials">Testimonials</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a href="#contact" class="header-cta">Let’s talk <span class="arrow">↗</span></a>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-visual" aria-hidden="true">
+        <picture>
+          <source
+            media="(max-width: 600px)"
+            srcset="assets/images/aman-buttar-editorial-hero-mobile.png"
+          />
+          <img
+            class="hero-poster"
+            src="assets/images/aman-buttar-editorial-hero.png"
+            alt=""
+            fetchpriority="high"
+          />
+        </picture>
+
+        <!--
+          Add a compressed, audio-free 8–15 second loop:
+          assets/videos/hero-showreel.webm
+          assets/videos/hero-showreel.mp4
+
+          Match the opening and closing frames for a seamless loop.
+          Sources are attached by JS only when motion is appropriate.
+        -->
+        <video
+          class="hero-video"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="none"
+          tabindex="-1"
+          disablepictureinpicture
+          disableremoteplayback
+        >
+          <source data-src="assets/videos/hero-showreel.webm" type="video/webm" />
+          <source data-src="assets/videos/hero-showreel.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      <div class="hero-content container">
+        <p class="hero-label eyebrow">
+          <span class="dot"></span>
+          Ideas&nbsp;&nbsp;→&nbsp;&nbsp; Edits&nbsp;&nbsp;→&nbsp;&nbsp; Impact
+        </p>
+
+        <h1 id="hero-title">
+          <span class="title-line"><span>AMAN BUTTAR</span></span>
+          <span class="title-line"><span><em>VIDEO EDITOR</em></span></span>
+        </h1>
+
+        <p class="hero-description">
+          Turning raw footage into powerful stories
+          that make an impact.
+        </p>
+
+        <div class="hero-bottom">
+          <a class="view-work" href="#work">View work <span class="arrow" aria-hidden="true">↗</span></a>
+
+          <button class="reel-button magnetic" type="button" data-film="showreel">
+            <span class="play-circle">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M7 4v16l14-8z" />
+              </svg>
+            </span>
+            <span class="reel-copy">
+              Play showreel
+              <small>A little of everything. All of me.</small>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-footer container">
+        <a href="#work">Scroll to explore <span aria-hidden="true">↓</span></a>
+        <span class="location">Based in India<br>Available worldwide</span>
+        <div class="hero-footer-end">
+          <span class="brand-manifesto">Good stories.<br>Brighter brands.</span>
+          <button
+            class="hero-motion-toggle"
+            type="button"
+            aria-label="Pause background video"
+            hidden
+          >
+            Pause motion
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="work" class="work container">
+      <div class="section-heading reveal">
+        <div>
+          <p class="eyebrow">01 / The work</p>
+          <h2>Selected stories<span class="count">(04)</span></h2>
+        </div>
+
+        <div class="filters" role="group" aria-label="Filter projects">
+          <button class="filter active" type="button" data-filter="all" aria-pressed="true">All work</button>
+          <button class="filter" type="button" data-filter="commercial" aria-pressed="false">Commercial</button>
+          <button class="filter" type="button" data-filter="film" aria-pressed="false">Short film</button>
+          <button class="filter" type="button" data-filter="music" aria-pressed="false">Music video</button>
+        </div>
+      </div>
+
+      <p class="sr-only" id="filter-status" role="status"></p>
+
+      <div class="project-grid">
+        <article class="project reveal" data-category="commercial">
+          <button class="project-button" type="button" data-film="beyond" aria-label="Watch Beyond the ordinary and view project details">
+            <img
+              src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1100&q=85"
+              alt="Sunlight breaking over a dramatic alpine mountain range"
+              loading="lazy"
+            />
+            <span class="project-tag">Brand film</span>
+            <span class="project-number">01 / OUTDOOR & ADVENTURE</span>
+            <span class="project-play">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l14-8z" /></svg>
+            </span>
+          </button>
+          <div class="project-info">
+            <div>
+              <h3>Beyond the ordinary</h3>
+              <p>Commercial · Editing & color</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </div>
+        </article>
+
+        <article class="project reveal" data-category="film">
+          <button class="project-button" type="button" data-film="space" aria-label="Watch The space between and view project details">
+            <img
+              src="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1100&q=85"
+              alt="A quiet, atmospheric night sky filled with stars"
+              loading="lazy"
+            />
+            <span class="project-tag">Short film</span>
+            <span class="project-number">02 / HUMAN CONNECTION</span>
+            <span class="project-play">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l14-8z" /></svg>
+            </span>
+          </button>
+          <div class="project-info">
+            <div>
+              <h3>The space between</h3>
+              <p>Short film · Editing & sound design</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </div>
+        </article>
+
+        <article class="project reveal" data-category="music">
+          <button class="project-button" type="button" data-film="hours" aria-label="Watch After hours and view project details">
+            <img
+              src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1100&q=85"
+              alt="A live performance washed in vivid red and blue light"
+              loading="lazy"
+            />
+            <span class="project-tag">Music video</span>
+            <span class="project-number">03 / SOUND IN MOTION</span>
+            <span class="project-play">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l14-8z" /></svg>
+            </span>
+          </button>
+          <div class="project-info">
+            <div>
+              <h3>After hours</h3>
+              <p>Music video · Creative edit</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </div>
+        </article>
+
+        <article class="project reveal" data-category="commercial">
+          <button class="project-button" type="button" data-film="move" aria-label="Watch Built to move and view project details">
+            <img
+              src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1100&q=85"
+              alt="A silver sports car on an open road"
+              loading="lazy"
+            />
+            <span class="project-tag">Commercial</span>
+            <span class="project-number">04 / PRECISION & PACE</span>
+            <span class="project-play">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l14-8z" /></svg>
+            </span>
+          </button>
+          <div class="project-info">
+            <div>
+              <h3>Built to move</h3>
+              <p>Commercial · Editing & sound design</p>
+            </div>
+            <span aria-hidden="true">↗</span>
+          </div>
+        </article>
+      </div>
+
+      <p class="work-note">Different stories. One obsession: making every frame matter.</p>
+    </section>
+
+    <section id="about" class="about container">
+      <div class="portrait reveal">
+        <img
+          src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1000&q=85"
+          alt="Layers of mist rolling through a quiet mountain landscape"
+          loading="lazy"
+        />
+        <div class="portrait-label">
+          <span>Always looking closer.</span>
+          <span aria-hidden="true">↗</span>
+        </div>
+      </div>
+
+      <div class="about-copy reveal">
+        <p class="eyebrow">02 / Behind the timeline</p>
+        <h2>Editing is a process of discovery.</h2>
+        <p>
+          I’m Aman, an independent video editor drawn to the moments
+          between the obvious. A held breath. An unexpected cut.
+          The silence before everything changes.
+        </p>
+        <p>
+          I partner with brands, filmmakers, and artists to find the
+          heart of their footage—and bring it to life with purpose.
+        </p>
+
+        <div class="services">
+          <div class="service"><span>01</span> Video editing <i aria-hidden="true">↗</i></div>
+          <div class="service"><span>02</span> Color grading <i aria-hidden="true">↗</i></div>
+          <div class="service"><span>03</span> Sound design <i aria-hidden="true">↗</i></div>
+          <div class="service"><span>04</span> Motion graphics <i aria-hidden="true">↗</i></div>
+        </div>
+
+        <div class="tools" aria-label="Editing software">
+          <span>Premiere Pro</span>
+          <span>DaVinci Resolve</span>
+          <span>After Effects</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="process container">
+      <div class="process-top reveal">
+        <h2>Good work. No guesswork.</h2>
+        <p>
+          A collaborative process that leaves room for the unexpected—and
+          keeps everything else on track.
+        </p>
+      </div>
+
+      <div class="steps">
+        <article class="step reveal">
+          <span>01 / CONNECT</span>
+          <h3>Find the story.</h3>
+          <p>
+            We talk vision, audience, and that hard-to-describe feeling
+            you’re chasing. Then build a clear creative direction.
+          </p>
+        </article>
+
+        <article class="step reveal">
+          <span>02 / CRAFT</span>
+          <h3>Make it move.</h3>
+          <p>
+            I shape the narrative, find the rhythm, and bring picture
+            and sound together. You’re part of the conversation throughout.
+          </p>
+        </article>
+
+        <article class="step reveal">
+          <span>03 / REFINE</span>
+          <h3>Every detail, dialed.</h3>
+          <p>
+            Thoughtful revisions. A considered color grade. The final
+            sound mix. Delivered ready for wherever your story goes.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="testimonials" class="testimonials container" aria-labelledby="testimonials-title">
+      <div class="section-heading reveal">
+        <div>
+          <p class="eyebrow">03 / In their words</p>
+          <h2 id="testimonials-title">The other side of the story.</h2>
+        </div>
+        <p class="testimonials-intro">
+          A few words from the people behind the projects.
+        </p>
+      </div>
+
+      <div class="testimonial-grid">
+        <!--
+          TO PUBLISH:
+          1. Add the local video file(s) below.
+          2. Change data-ready="false" to data-ready="true".
+          3. Replace the client name and project details.
+          4. Add a captions track for spoken testimonials:
+             <track kind="captions" src="assets/videos/testimonial-01.vtt"
+                    srclang="en" label="English" default />
+        -->
+        <article class="testimonial-card reveal" data-ready="false">
+          <div class="testimonial-media">
+            <video
+              class="testimonial-video"
+              controls
+              playsinline
+              preload="none"
+              tabindex="0"
+              aria-label="Client testimonial one"
+            >
+              <source data-src="assets/videos/testimonial-01.webm" type="video/webm" />
+              <source data-src="assets/videos/testimonial-01.mp4" type="video/mp4" />
+              Your browser does not support embedded video.
+            </video>
+
+            <button
+              class="testimonial-placeholder"
+              type="button"
+              aria-label="Client testimonial one — coming soon"
+            >
+              <span class="testimonial-index eyebrow">Client perspective / 01</span>
+              <span class="testimonial-play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l14-8z" /></svg>
+              </span>
+              <span class="testimonial-placeholder-copy">
+                A story, in their words.
+                <small>Video testimonial · Coming soon</small>
+              </span>
+            </button>
+          </div>
+
+          <div class="testimonial-meta">
+            <div>
+              <h3>Client testimonial</h3>
+              <p>Client name & project details to follow</p>
+            </div>
+            <span aria-hidden="true">01</span>
+          </div>
+          <p class="testimonial-status" role="status"></p>
+        </article>
+
+        <!-- Remove this article if you only want one testimonial. -->
+        <article class="testimonial-card reveal" data-ready="false">
+          <div class="testimonial-media">
+            <video
+              class="testimonial-video"
+              controls
+              playsinline
+              preload="none"
+              tabindex="0"
+              aria-label="Client testimonial two"
+            >
+              <source data-src="assets/videos/testimonial-02.webm" type="video/webm" />
+              <source data-src="assets/videos/testimonial-02.mp4" type="video/mp4" />
+              Your browser does not support embedded video.
+            </video>
+
+            <button
+              class="testimonial-placeholder"
+              type="button"
+              aria-label="Client testimonial two — coming soon"
+            >
+              <span class="testimonial-index eyebrow">Client perspective / 02</span>
+              <span class="testimonial-play" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l14-8z" /></svg>
+              </span>
+              <span class="testimonial-placeholder-copy">
+                Good work starts with trust.
+                <small>Video testimonial · Coming soon</small>
+              </span>
+            </button>
+          </div>
+
+          <div class="testimonial-meta">
+            <div>
+              <h3>Client testimonial</h3>
+              <p>Client name & project details to follow</p>
+            </div>
+            <span aria-hidden="true">02</span>
+          </div>
+          <p class="testimonial-status" role="status"></p>
+        </article>
+      </div>
+    </section>
+
+    <section id="contact" class="contact container">
+      <div class="reveal">
+        <p class="availability">
+          <span class="dot"></span>
+          Open for select collaborations
+        </p>
+
+        <div class="contact-main">
+          <h2>Let’s make<br>something matter.</h2>
+          <a
+            class="contact-button magnetic"
+            href="mailto:abuttar192@gmail.com"
+            aria-label="Email Aman Buttar to start a project"
+          >
+            <span class="arrow">↗</span>
+          </a>
+        </div>
+
+        <div class="contact-bottom">
+          <a class="email" href="mailto:abuttar192@gmail.com">abuttar192@gmail.com</a>
+          <button class="copy-button" type="button" aria-live="polite">Copy email ↗</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    <span>© <span id="year">2026</span> Aman Buttar</span>
+    <span>Made with intention. Frame by frame.</span>
+    <a href="#top">Back to top ↑</a>
+  </footer>
+
+  <dialog class="video-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-header">
+      <h2 id="dialog-title">Showreel</h2>
+      <button class="dialog-close" type="button" aria-label="Close video" autofocus>×</button>
+    </div>
+
+    <!-- Video always appears before the project description and credits. -->
+    <video class="dialog-video" controls playsinline preload="none"></video>
+    <p class="dialog-caption" role="status"></p>
+
+    <section class="project-details" aria-labelledby="project-detail-title" hidden>
+      <div class="project-details-heading">
+        <p class="eyebrow">Behind the edit</p>
+        <span class="project-detail-category"></span>
+      </div>
+
+      <h3 id="project-detail-title"></h3>
+
+      <div class="project-details-grid">
+        <div class="project-description">
+          <h4>Project description</h4>
+          <p id="project-description"></p>
+        </div>
+
+        <div>
+          <h4>My role</h4>
+          <p id="project-role"></p>
+        </div>
+
+        <div>
+          <h4>Credits</h4>
+          <dl class="project-credits" id="project-credits"></dl>
+        </div>
+      </div>
+    </section>
+  </dialog>
+
+  <script>
+    (() => {
+      "use strict";
+
+      /*
+       * PROJECT CONTENT
+       * Existing sample videos are retained for working demo playback.
+       * Replace each video URL with your own local MP4, for example:
+       * video: "assets/videos/beyond-the-ordinary.mp4"
+       * Then set demo: false.
+       *
+       * Descriptions are editable example copy. Update roles and credits
+       * to accurately reflect your finished projects before publishing.
+       * Optional captions: captions: "assets/videos/project-name.vtt"
+       */
+      const films = {
+        showreel: {
+          title: "Showreel — A little of everything",
+          video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+          demo: true
+        },
+        beyond: {
+          title: "Beyond the ordinary",
+          category: "Commercial / Outdoor & adventure",
+          video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+          demo: true,
+          description:
+            "An outdoor brand film built around scale, atmosphere, and the pull of exploration. The edit moves between expansive landscapes and quieter moments.",
+          role: "Video editing · Color grading",
+          credits: [
+            ["Editor", "Aman Buttar"],
+            ["Production", "Full production credits to be added."]
+          ]
+        },
+        space: {
+          title: "The space between",
+          category: "Short film / Human connection",
+          video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+          demo: true,
+          description:
+            "An atmospheric short film exploring connection through space, silence, and timing. A restrained edit gives the quieter moments room to resonate.",
+          role: "Video editing · Sound design",
+          credits: [
+            ["Editor", "Aman Buttar"],
+            ["Production", "Full production credits to be added."]
+          ]
+        },
+        hours: {
+          title: "After hours",
+          category: "Music video / Sound in motion",
+          video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
+          demo: true,
+          description:
+            "A rhythm-led visual piece shaped around the energy of the track. Performance, texture, and contrast come together in a deliberate, expressive edit.",
+          role: "Creative editing",
+          credits: [
+            ["Editor", "Aman Buttar"],
+            ["Artist & production", "Credits to be added."]
+          ]
+        },
+        move: {
+          title: "Built to move",
+          category: "Commercial / Precision & pace",
+          video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+          demo: true,
+          description:
+            "An automotive film balancing sculptural detail with forward momentum. Precise cuts and considered sound design bring the visual rhythm into focus.",
+          role: "Video editing · Sound design",
+          credits: [
+            ["Editor", "Aman Buttar"],
+            ["Production", "Full production credits to be added."]
+          ]
+        }
+      };
+
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+      const connection = navigator.connection;
+
+      const hero = document.querySelector(".hero");
+      const heroVisual = document.querySelector(".hero-visual");
+      const heroVideo = document.querySelector(".hero-video");
+      const heroMotionButton = document.querySelector(".hero-motion-toggle");
+      const heroFooterEnd = document.querySelector(".hero-footer-end");
+
+      const dialog = document.querySelector(".video-dialog");
+      const dialogVideo = document.querySelector(".dialog-video");
+      const dialogCaption = document.querySelector(".dialog-caption");
+      const detailSection = document.querySelector(".project-details");
+      const testimonialVideos = [...document.querySelectorAll(".testimonial-video")];
+
+      let heroInView = true;
+      let heroUserPaused = false;
+      let heroBlocked = false;
+      let heroUnavailable = false;
+      let heroAttemptPending = false;
+      let videoTrigger = null;
+      let playbackRequest = 0;
+
+      // Reveal animations; content remains visible without JavaScript.
+      const reveals = document.querySelectorAll(".reveal");
+
+      if ("IntersectionObserver" in window) {
+        const revealObserver = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08 });
+
+        document.documentElement.classList.add("js");
+        reveals.forEach(element => revealObserver.observe(element));
+      }
+
+      // Native scrolling with subtle, frame-scheduled parallax.
+      let scrollScheduled = false;
+
+      function updateParallax() {
+        heroVisual.style.transform = reducedMotion.matches
+          ? ""
+          : `translate3d(0, ${Math.min(window.scrollY, hero.offsetHeight) * 0.18}px, 0)`;
+        scrollScheduled = false;
+      }
+
+      window.addEventListener("scroll", () => {
+        if (!scrollScheduled) {
+          scrollScheduled = true;
+          requestAnimationFrame(updateParallax);
+        }
+      }, { passive: true });
+
+      // Mobile navigation.
+      const menuButton = document.querySelector(".menu-toggle");
+      const navigation = document.querySelector(".nav");
+
+      function closeMenu() {
+        navigation.classList.remove("open");
+        menuButton.setAttribute("aria-expanded", "false");
+        menuButton.textContent = "Menu +";
+      }
+
+      menuButton.addEventListener("click", () => {
+        const open = navigation.classList.toggle("open");
+        menuButton.setAttribute("aria-expanded", String(open));
+        menuButton.textContent = open ? "Close −" : "Menu +";
+      });
+
+      navigation.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", closeMenu);
+      });
+
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && navigation.classList.contains("open")) {
+          closeMenu();
+          menuButton.focus();
+        }
+      });
+
+      // Existing project filters.
+      const filters = document.querySelectorAll(".filter");
+      const projects = document.querySelectorAll(".project");
+
+      filters.forEach(button => {
+        button.addEventListener("click", () => {
+          filters.forEach(filter => {
+            const active = filter === button;
+            filter.classList.toggle("active", active);
+            filter.setAttribute("aria-pressed", String(active));
+          });
+
+          let visibleCount = 0;
+
+          projects.forEach(project => {
+            project.getAnimations().forEach(animation => {
+              if (animation.id === "project-filter") animation.cancel();
+            });
+
+            const show = button.dataset.filter === "all" ||
+              project.dataset.category === button.dataset.filter;
+
+            project.hidden = !show;
+
+            if (show) {
+              project.classList.add("visible");
+
+              if (!reducedMotion.matches) {
+                const animation = project.animate([
+                  { opacity: 0, transform: "translateY(18px)" },
+                  { opacity: 1, transform: "translateY(0)" }
+                ], {
+                  duration: 550,
+                  delay: visibleCount * 65,
+                  easing: "cubic-bezier(.22,1,.36,1)",
+                  fill: "backwards"
+                });
+
+                animation.id = "project-filter";
+              }
+
+              visibleCount++;
+            }
+          });
+
+          document.querySelector(".count").textContent =
+            `(${String(visibleCount).padStart(2, "0")})`;
+
+          document.querySelector("#filter-status").textContent =
+            `${visibleCount} ${visibleCount === 1 ? "project" : "projects"} shown.`;
+        });
+      });
+
+      // Local sources are not requested until needed.
+      function attachLocalSources(player) {
+        if (player.dataset.sourcesAttached === "true") return;
+
+        player.querySelectorAll("source[data-src]").forEach(source => {
+          source.src = source.dataset.src;
+        });
+
+        player.dataset.sourcesAttached = "true";
+        player.load();
+      }
+
+      function watchSourceFailures(player, onFailure) {
+        const sources = [...player.querySelectorAll("source")];
+        const failed = new Set();
+
+        sources.forEach(source => {
+          source.addEventListener("error", () => {
+            failed.add(source);
+            if (failed.size === sources.length) onFailure();
+          });
+        });
+
+        player.addEventListener("error", onFailure);
+      }
+
+      // Silent hero playback, respecting reduced motion and data saving.
+      heroVideo.muted = true;
+      heroVideo.defaultMuted = true;
+
+      function heroMotionAllowed() {
+        return !reducedMotion.matches &&
+          !connection?.saveData &&
+          !heroUnavailable;
+      }
+
+      function foregroundPlaying() {
+        return testimonialVideos.some(player => !player.paused && !player.ended);
+      }
+
+      function heroShouldPlay() {
+        return heroMotionAllowed() &&
+          heroInView &&
+          !document.hidden &&
+          !heroUserPaused &&
+          !heroBlocked &&
+          !dialog.open &&
+          !foregroundPlaying();
+      }
+
+      function updateHeroControl() {
+        const visible = heroMotionAllowed() &&
+          (heroVideo.classList.contains("is-ready") || heroBlocked);
+
+        heroMotionButton.hidden = !visible;
+        heroFooterEnd.classList.toggle("has-control", visible);
+
+        const paused = heroUserPaused || heroBlocked || heroVideo.paused;
+        heroMotionButton.textContent = paused ? "Play motion" : "Pause motion";
+        heroMotionButton.setAttribute(
+          "aria-label",
+          paused ? "Play background video" : "Pause background video"
+        );
+      }
+
+      function syncHeroPlayback() {
+        if (!heroMotionAllowed()) {
+          heroVideo.pause();
+          heroVideo.classList.remove("is-ready");
+          updateHeroControl();
+          return;
+        }
+
+        if (!heroShouldPlay()) {
+          heroVideo.pause();
+          updateHeroControl();
+          return;
+        }
+
+        attachLocalSources(heroVideo);
+
+        if (!heroVideo.paused || heroAttemptPending) {
+          updateHeroControl();
+          return;
+        }
+
+        heroAttemptPending = true;
+
+        heroVideo.play()
+          .catch(error => {
+            if (error.name === "NotAllowedError") heroBlocked = true;
+          })
+          .finally(() => {
+            heroAttemptPending = false;
+            updateHeroControl();
+          });
+      }
+
+      heroVideo.addEventListener("playing", () => {
+        if (!heroShouldPlay()) {
+          heroVideo.pause();
+          return;
+        }
+        heroVideo.classList.add("is-ready");
+        updateHeroControl();
+      });
+
+      heroVideo.addEventListener("pause", updateHeroControl);
+
+      watchSourceFailures(heroVideo, () => {
+        heroUnavailable = true;
+        heroVideo.pause();
+        heroVideo.classList.remove("is-ready");
+        updateHeroControl();
+      });
+
+      heroMotionButton.addEventListener("click", () => {
+        if (heroVideo.paused || heroBlocked || heroUserPaused) {
+          heroUserPaused = false;
+          heroBlocked = false;
+        } else {
+          heroUserPaused = true;
+        }
+        syncHeroPlayback();
+      });
+
+      if ("IntersectionObserver" in window) {
+        const heroObserver = new IntersectionObserver(entries => {
+          heroInView = entries[0].isIntersecting;
+          syncHeroPlayback();
+        }, { threshold: 0 });
+
+        heroObserver.observe(hero);
+      }
+
+      // Project dialog: film first, details beneath.
+      document.querySelectorAll("[data-film]").forEach(button => {
+        button.addEventListener("click", () => {
+          const film = films[button.dataset.film];
+          if (!film) return;
+
+          videoTrigger = button;
+          const request = ++playbackRequest;
+          const isProject = Boolean(film.description);
+
+          document.querySelector("#dialog-title").textContent = film.title;
+          dialogVideo.setAttribute("aria-label", film.title);
+          dialog.classList.toggle("has-project", isProject);
+          detailSection.hidden = !isProject;
+
+          dialogCaption.textContent = film.demo
+            ? "Demo playback · Sample footage, not a finished portfolio film."
+            : "Use the player controls for sound, captions, and fullscreen.";
+
+          if (isProject) {
+            document.querySelector("#project-detail-title").textContent = film.title;
+            document.querySelector(".project-detail-category").textContent = film.category;
+            document.querySelector("#project-description").textContent = film.description;
+            document.querySelector("#project-role").textContent = film.role;
+
+            const credits = document.querySelector("#project-credits");
+            credits.replaceChildren();
+
+            film.credits.forEach(([label, name]) => {
+              const row = document.createElement("div");
+              const term = document.createElement("dt");
+              const value = document.createElement("dd");
+              term.textContent = label;
+              value.textContent = name;
+              row.append(term, value);
+              credits.append(row);
+            });
+          }
+
+          dialogVideo.querySelectorAll("track").forEach(track => track.remove());
+
+          if (film.captions) {
+            const track = document.createElement("track");
+            track.kind = "captions";
+            track.src = film.captions;
+            track.srclang = "en";
+            track.label = "English";
+            track.default = true;
+            dialogVideo.append(track);
+          }
+
+          dialogVideo.src = film.video;
+          dialog.showModal();
+          dialog.scrollTop = 0;
+          document.body.classList.add("locked");
+
+          testimonialVideos.forEach(player => player.pause());
+          syncHeroPlayback();
+
+          dialogVideo.play().catch(error => {
+            if (
+              request === playbackRequest &&
+              dialog.open &&
+              !dialogVideo.error &&
+              error.name !== "AbortError"
+            ) {
+              dialogCaption.textContent = "Press play to start the film.";
+            }
+          });
+        });
+      });
+
+      dialog.querySelector(".dialog-close").addEventListener("click", () => {
+        dialog.close();
+      });
+
+      dialog.addEventListener("click", event => {
+        const bounds = dialog.getBoundingClientRect();
+        const outside = event.clientX < bounds.left ||
+          event.clientX > bounds.right ||
+          event.clientY < bounds.top ||
+          event.clientY > bounds.bottom;
+
+        if (event.target === dialog && outside) dialog.close();
+      });
+
+      dialog.addEventListener("close", () => {
+        playbackRequest++;
+        dialogVideo.pause();
+        dialogVideo.removeAttribute("src");
+        dialogVideo.querySelectorAll("track").forEach(track => track.remove());
+        dialogVideo.load();
+        document.body.classList.remove("locked");
+        syncHeroPlayback();
+        videoTrigger?.focus({ preventScroll: true });
+      });
+
+      dialogVideo.addEventListener("error", () => {
+        if (dialog.open && dialogVideo.hasAttribute("src")) {
+          dialogCaption.textContent =
+            "This preview couldn’t load. Please check the video file or your connection and try again.";
+        }
+      });
+
+      // Testimonial placeholders and user-initiated local playback.
+      document.querySelectorAll(".testimonial-card").forEach((card, index) => {
+        const player = card.querySelector(".testimonial-video");
+        const media = card.querySelector(".testimonial-media");
+        const placeholder = card.querySelector(".testimonial-placeholder");
+        const status = card.querySelector(".testimonial-status");
+        const ready = card.dataset.ready === "true";
+
+        let unavailable = false;
+        let loadingTimer;
+
+        if (ready) {
+          placeholder.setAttribute("aria-label", `Play client testimonial ${index + 1}`);
+          placeholder.querySelector("small").textContent = "Video testimonial · Watch the story";
+        }
+
+        function showUnavailable() {
+          clearTimeout(loadingTimer);
+          unavailable = true;
+          player.pause();
+          media.classList.remove("is-ready");
+          placeholder.hidden = false;
+          placeholder.disabled = false;
+          placeholder.removeAttribute("aria-busy");
+          status.textContent =
+            "This testimonial couldn’t load. Please try again later.";
+        }
+
+        watchSourceFailures(player, showUnavailable);
+
+        placeholder.addEventListener("click", async () => {
+          if (!ready) {
+            status.textContent = "This client testimonial is coming soon.";
+            return;
+          }
+
+          if (unavailable) {
+            status.textContent = "This testimonial is currently unavailable.";
+            return;
+          }
+
+          placeholder.disabled = true;
+          placeholder.setAttribute("aria-busy", "true");
+          status.textContent = "Loading testimonial…";
+
+          clearTimeout(loadingTimer);
+          loadingTimer = setTimeout(() => {
+            if (!unavailable && !media.classList.contains("is-ready")) {
+              placeholder.disabled = false;
+              placeholder.removeAttribute("aria-busy");
+              status.textContent = "Still loading. Please check your connection.";
+            }
+          }, 12000);
+
+          attachLocalSources(player);
+
+          try {
+            await player.play();
+          } catch (error) {
+            clearTimeout(loadingTimer);
+            if (unavailable) return;
+
+            placeholder.disabled = false;
+            placeholder.removeAttribute("aria-busy");
+
+            if (player.error) {
+              showUnavailable();
+            } else if (error.name !== "AbortError") {
+              media.classList.add("is-ready");
+              placeholder.hidden = true;
+              status.textContent = "Use the video controls to start playback.";
+              player.focus({ preventScroll: true });
+            } else {
+              status.textContent = "";
+            }
+          }
+        });
+
+        player.addEventListener("play", () => {
+          testimonialVideos.forEach(other => {
+            if (other !== player) other.pause();
+          });
+          dialogVideo.pause();
+          syncHeroPlayback();
+        });
+
+        player.addEventListener("playing", () => {
+          if (document.hidden || dialog.open) {
+            player.pause();
+            return;
+          }
+
+          clearTimeout(loadingTimer);
+          const firstPlayback = !placeholder.hidden;
+
+          media.classList.add("is-ready");
+          placeholder.hidden = true;
+          placeholder.disabled = false;
+          placeholder.removeAttribute("aria-busy");
+          status.textContent = "";
+
+          if (firstPlayback) player.focus({ preventScroll: true });
+          syncHeroPlayback();
+        });
+
+        player.addEventListener("pause", syncHeroPlayback);
+        player.addEventListener("ended", syncHeroPlayback);
+      });
+
+      if ("IntersectionObserver" in window) {
+        const testimonialObserver = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) entry.target.pause();
+          });
+        }, { threshold: 0 });
+
+        testimonialVideos.forEach(player => testimonialObserver.observe(player));
+      }
+
+      // Avoid background playback in hidden tabs.
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          dialogVideo.pause();
+          testimonialVideos.forEach(player => player.pause());
+        }
+        syncHeroPlayback();
+      });
+
+      reducedMotion.addEventListener("change", () => {
+        updateParallax();
+        syncHeroPlayback();
+
+        if (reducedMotion.matches) {
+          projects.forEach(project => {
+            project.getAnimations().forEach(animation => {
+              if (animation.id === "project-filter") animation.cancel();
+            });
+          });
+
+          document.querySelectorAll(".magnetic").forEach(element => {
+            element.style.translate = "";
+          });
+        }
+      });
+
+      connection?.addEventListener?.("change", syncHeroPlayback);
+
+      // Gentle magnetic interactions for mouse/trackpad users only.
+      document.querySelectorAll(".magnetic").forEach(element => {
+        element.addEventListener("pointerenter", () => {
+          if (!finePointer.matches || reducedMotion.matches) return;
+          element.style.transition = "translate .15s ease-out";
+        });
+
+        element.addEventListener("pointermove", event => {
+          if (!finePointer.matches || reducedMotion.matches) return;
+
+          const rect = element.getBoundingClientRect();
+          const x = (event.clientX - rect.left - rect.width / 2) * 0.12;
+          const y = (event.clientY - rect.top - rect.height / 2) * 0.12;
+          element.style.translate = `${x}px ${y}px`;
+        });
+
+        element.addEventListener("pointerleave", () => {
+          element.style.transition = "translate .6s cubic-bezier(.22,1,.36,1)";
+          element.style.translate = "0 0";
+        });
+      });
+
+      // Copy email; the mailto link remains available if clipboard is blocked.
+      const copyButton = document.querySelector(".copy-button");
+      let copyTimeout;
+
+      copyButton.addEventListener("click", async () => {
+        clearTimeout(copyTimeout);
+
+        try {
+          await navigator.clipboard.writeText("abuttar192@gmail.com");
+          copyButton.textContent = "Copied ✓";
+        } catch {
+          copyButton.textContent = "Use the email link ↗";
+        }
+
+        copyTimeout = setTimeout(() => {
+          copyButton.textContent = "Copy email ↗";
+        }, 2500);
+      });
+
+      document.querySelector("#year").textContent = new Date().getFullYear();
+      updateParallax();
+      syncHeroPlayback();
+    })();
+  </script>
+</body>
+</html>
