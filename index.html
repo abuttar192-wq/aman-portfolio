@@ -675,6 +675,12 @@
       border: 0;
       background: #000;
     }
+    .video-dialog.is-reel > iframe.dialog-youtube {
+      width: min(100%, 390px);
+      max-height: 70svh;
+      aspect-ratio: 9 / 16;
+      margin-inline: auto;
+    }
     .video-dialog.has-project > video { max-height: 56svh; }
     .dialog-caption { padding: 15px 22px; font-size: 11px; line-height: 1.7; color: var(--muted); }
     .project-details {
@@ -1688,6 +1694,7 @@
       const detailSection = document.querySelector(".project-details");
       const testimonialVideos = [...document.querySelectorAll(".testimonial-video")];
       const reelVideos = [...document.querySelectorAll(".reel-card video")];
+      const reelYoutubeUrl = "https://www.youtube.com/embed/nI9s6slKOuY?autoplay=1&rel=0";
 
       reelVideos.forEach(player => {
         const card = player.closest(".reel-card");
@@ -1696,7 +1703,7 @@
         card.tabIndex = 0;
         card.setAttribute("aria-label", `Play ${card.querySelector(".reel-card-label span").textContent}`);
 
-        const playReel = async () => {
+        const playReel = () => {
           reelVideos.forEach(other => {
             if (other !== player) {
               other.pause();
@@ -1704,12 +1711,25 @@
             }
           });
 
-          attachLocalSources(player);
-          try {
-            await player.play();
-          } catch {
-            card.classList.remove("is-playing");
-          }
+          videoTrigger = card;
+          playbackRequest++;
+          dialogVideo.pause();
+          dialogVideo.removeAttribute("src");
+          dialogVideo.load();
+          dialogVideo.hidden = true;
+          dialogYoutube.src = reelYoutubeUrl;
+          dialogYoutube.hidden = false;
+          dialog.classList.remove("has-project");
+          dialog.classList.add("is-reel");
+          detailSection.hidden = true;
+          document.querySelector("#dialog-title").textContent = card.querySelector(".reel-card-label span").textContent;
+          dialogYoutube.title = card.querySelector(".reel-card-label span").textContent;
+          dialogCaption.textContent = "Use the player controls for sound, captions, and fullscreen.";
+          dialog.showModal();
+          dialog.scrollTop = 0;
+          document.body.classList.add("locked");
+          testimonialVideos.forEach(testimonial => testimonial.pause());
+          syncHeroPlayback();
         };
 
         card.addEventListener("click", playReel);
@@ -2093,6 +2113,7 @@
           document.querySelector("#dialog-title").textContent = film.title;
           dialogVideo.setAttribute("aria-label", film.title);
           dialog.classList.toggle("has-project", isProject);
+          dialog.classList.remove("is-reel");
           detailSection.hidden = !isProject;
 
           dialogCaption.textContent = film.demo
@@ -2184,6 +2205,7 @@
         dialogVideo.hidden = false;
         dialogYoutube.removeAttribute("src");
         dialogYoutube.hidden = true;
+        dialog.classList.remove("is-reel");
         dialogVideo.querySelectorAll("track").forEach(track => track.remove());
         dialogVideo.load();
         document.body.classList.remove("locked");
