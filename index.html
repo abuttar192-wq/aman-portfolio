@@ -103,7 +103,11 @@
     .nav a:hover { color: var(--accent); }
     .nav .contact-link { color: var(--text); }
     .contact-link span { margin-left: 12px; }
-    .menu-toggle { display: none; background: transparent; padding: 8px; }
+    .menu-toggle { display: none; align-items: center; gap: 4px; background: transparent; padding: 8px; }
+    .menu-label { font: 500 13px/1 "Space Mono", monospace; letter-spacing: .1em; }
+    .menu-symbol { width: 9px; display: inline-block; font: 400 12px/1 "DM Mono", monospace; text-align: center; transform: translateY(2px); }
+    .menu-toggle.open .menu-symbol { font-size: 0; }
+    .menu-toggle.open .menu-symbol::after { content: "×"; font-size: 21px; line-height: 13px; }
 
     /* Hero */
     .hero {
@@ -970,8 +974,11 @@
     @media (max-width: 600px) {
       .header { padding-top: 20px; align-items: center; }
       .logo-mark { width: 43px; transform: scale(.85); transform-origin: left center; }
-      .menu-toggle { display: block; margin-left: auto; margin-right: 8px; font-family: "Space Mono", monospace; font-size: 9px; }
-      .nav { transform: none; left: 0; top: 70px; }
+      .menu-toggle { display: inline-flex; margin-left: auto; margin-right: 8px; }
+      .nav { transform: none; left: 48%; top: 70px; padding: 20px var(--gutter) 20px 0; border: 1px solid rgba(244, 243, 240, .18); border-radius: 18px 0 0 18px; overflow: hidden; }
+      .nav.open { gap: 0; }
+      .nav.open a { width: 100%; margin-left: 0; padding: 16px; border: 0; border-radius: 0; text-align: right; }
+      .nav.open a + a { border-top: 1px solid rgba(244, 243, 240, .18); }
       .header-cta { display: none; }
       .nav a:first-child::after { display: none; }
       .hero { min-height: 680px; }
@@ -981,8 +988,8 @@
       .hero-bottom { flex-direction: row; align-items: center; gap: 18px; }
       .view-work { flex-shrink: 0; }
       .reel-button { flex-shrink: 0; white-space: nowrap; }
-      .hero-visual { scale: .92; transform-origin: 35% 50%; }
-      .hero-poster { object-position: 35% center; }
+      .hero-visual { inset: 0; scale: 1; transform-origin: center; }
+      .hero-poster { object-position: center; }
       .hero-description { font-size: 14px; }
       .view-work { padding: 16px 20px; font-size: 9px; }
       .hero-footer { padding-bottom: 27px; }
@@ -1000,8 +1007,9 @@
       aman buttar.
     </a>
 
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation">
-      Menu +
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="navigation" aria-label="Open menu">
+      <span class="menu-label">Menu</span>
+      <span class="menu-symbol" aria-hidden="true">+</span>
     </button>
 
     <nav class="nav" id="navigation" aria-label="Main navigation">
@@ -1608,14 +1616,16 @@
 
       function closeMenu() {
         navigation.classList.remove("open");
+        menuButton.classList.remove("open");
         menuButton.setAttribute("aria-expanded", "false");
-        menuButton.textContent = "Menu +";
+        menuButton.setAttribute("aria-label", "Open menu");
       }
 
       menuButton.addEventListener("click", () => {
         const open = navigation.classList.toggle("open");
+        menuButton.classList.toggle("open", open);
         menuButton.setAttribute("aria-expanded", String(open));
-        menuButton.textContent = open ? "Close −" : "Menu +";
+        menuButton.setAttribute("aria-label", open ? "Close menu" : "Open menu");
       });
 
       navigation.querySelectorAll("a").forEach(link => {
