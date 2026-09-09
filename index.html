@@ -388,6 +388,29 @@
     .project-info p { font-size: 10px; color: var(--muted); margin-top: 7px; }
     .project-info > span { font-size: 21px; color: #b5b8ac; }
     .work-note { margin-top: 35px; text-align: center; font-size: 11px; color: var(--muted); }
+    .reels { margin-top: 105px; }
+    .reels-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 25px; margin-bottom: 30px; }
+    .reels-heading .eyebrow { margin-bottom: 17px; color: var(--muted); }
+    .reels-heading h3 { font: 600 clamp(28px, 3.2vw, 45px)/1.1 "Inter", sans-serif; letter-spacing: -.06em; }
+    .reels-hint { display: flex; align-items: center; gap: 10px; color: var(--muted); font: 9px/1 "Space Mono", monospace; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+    .reels-hint span { color: var(--text); font-size: 17px; letter-spacing: 0; }
+    .reel-viewport { position: relative; }
+    .reel-rail { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 100px) / 5); gap: 25px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline mandatory; touch-action: pan-y; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #565950 transparent; padding: 2px 0 16px; cursor: grab; }
+    .reel-rail.is-dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+    .reel-arrow { position: absolute; z-index: 3; top: 50%; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(244,243,240,.34); border-radius: 50%; background: rgba(8,9,9,.2); color: var(--text); backdrop-filter: blur(8px); transform: translateY(-50%); transition: background .3s, border-color .3s, opacity .3s; animation: reel-arrow-pulse 2.8s ease-in-out infinite; }
+    .reel-arrow:hover { border-color: var(--text); background: rgba(244,243,240,.16); }
+    .reel-arrow svg { width: 17px; height: 17px; }
+    .reel-arrow-prev { left: 12px; }
+    .reel-arrow-next { right: 12px; animation-delay: 1.4s; }
+    @keyframes reel-arrow-pulse {
+      0%, 100% { opacity: .58; transform: translateY(-50%) scale(1); }
+      50% { opacity: 1; transform: translateY(-50%) scale(1.12); }
+    }
+    .reel-card { position: relative; min-width: 0; aspect-ratio: 9 / 16; overflow: hidden; scroll-snap-align: start; border-radius: 20px; background: var(--surface); isolation: isolate; }
+    .reel-card video { display: block; width: 100%; height: 100%; object-fit: cover; background: #161816; pointer-events: none; }
+    .reel-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(transparent 52%, rgba(0,0,0,.62)); }
+    .reel-card-label { position: absolute; z-index: 1; left: 18px; right: 18px; bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text); font: 10px/1.4 "Space Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .reel-card-label span:last-child { color: var(--muted); font-size: 9px; }
 
     /* About */
     .about {
@@ -772,6 +795,13 @@
       .section-heading { margin-bottom: 28px; gap: 23px; }
       .filter { padding: 9px 14px; font-size: 10px; }
       .project-grid { grid-template-columns: 1fr; gap: 30px; }
+      .reels { margin-top: 75px; }
+      .reels-heading { align-items: flex-start; flex-direction: column; gap: 18px; }
+      .reel-rail { gap: 12px; grid-auto-columns: calc((100% - 12px) / 2); }
+      .reel-arrow { width: 36px; height: 36px; }
+      .reel-arrow-prev { left: 8px; }
+      .reel-arrow-next { right: 8px; }
+      .reel-card-label { left: 12px; right: 12px; bottom: 13px; font-size: 8px; }
       .project-play {
         width: 44px;
         height: 44px;
@@ -970,7 +1000,7 @@
     h2 { font-weight: 600; }
     .filter { border-radius: 999px; padding: 11px 15px; }
     .filter.active { background: var(--text); border-color: var(--text); }
-    .project-button, .testimonial-media { border-radius: 10px; }
+    .project-button, .testimonial-media { border-radius: 20px; }
     .project-button { aspect-ratio: 1.42; }
     .project-button img { filter: saturate(.55) brightness(.78); }
     .project-play { background: var(--text); }
@@ -1128,6 +1158,7 @@
 
         <div class="filters" role="group" aria-label="Filter projects">
           <button class="filter active" type="button" data-filter="all" aria-pressed="true">All work</button>
+          <button class="filter" type="button" data-filter="short-form" aria-pressed="false">Short form</button>
           <button class="filter" type="button" data-filter="commercial" aria-pressed="false">Commercial</button>
           <button class="filter" type="button" data-filter="film" aria-pressed="false">Short film</button>
           <button class="filter" type="button" data-filter="music" aria-pressed="false">Music video</button>
@@ -1227,6 +1258,78 @@
       </div>
 
       <p class="work-note">Different stories. One obsession: making every frame matter.</p>
+
+      <section class="reels reveal" aria-labelledby="reels-title">
+        <div class="reels-heading">
+          <div>
+            <p class="eyebrow">Quick cuts / Vertical stories</p>
+            <h3 id="reels-title">Reels in motion.</h3>
+          </div>
+          <p class="reels-hint"><span aria-hidden="true">← →</span> Drag to explore</p>
+        </div>
+
+        <div class="reel-viewport">
+          <button class="reel-arrow reel-arrow-prev" type="button" aria-label="Show previous reels" title="Previous reels">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+
+          <div class="reel-rail" aria-label="Vertical reels">
+          <!-- Add the matching files at assets/videos/reel-01.mp4 through reel-12.mp4. -->
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-01.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 01</span><span>01 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-02.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 02</span><span>02 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-03.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 03</span><span>03 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-04.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 04</span><span>04 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-05.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 05</span><span>05 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-06.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 06</span><span>06 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-07.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 07</span><span>07 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1521337581100-8ca9a73a5f79?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-08.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 08</span><span>08 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-09.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 09</span><span>09 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-10.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 10</span><span>10 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-11.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 11</span><span>11 / 12</span></div>
+          </article>
+          <article class="reel-card">
+            <video muted loop playsinline preload="none" poster="https://images.unsplash.com/photo-1524650359799-842906ca1c06?auto=format&fit=crop&w=700&q=85"><source data-src="assets/videos/reel-12.mp4" type="video/mp4"></video>
+            <div class="reel-card-label"><span>Reel 12</span><span>12 / 12</span></div>
+          </article>
+          </div>
+
+          <button class="reel-arrow reel-arrow-next" type="button" aria-label="Show next reels" title="Next reels">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+          </button>
+        </div>
+      </section>
     </section>
 
     <section id="about" class="about container">
@@ -1582,6 +1685,7 @@
       const dialogCaption = document.querySelector(".dialog-caption");
       const detailSection = document.querySelector(".project-details");
       const testimonialVideos = [...document.querySelectorAll(".testimonial-video")];
+      const reelVideos = [...document.querySelectorAll(".reel-card video")];
 
       let heroInView = true;
       let heroUserPaused = false;
@@ -1657,6 +1761,7 @@
       // Existing project filters.
       const filters = document.querySelectorAll(".filter");
       const projects = document.querySelectorAll(".project");
+      const reelSection = document.querySelector(".reels");
 
       filters.forEach(button => {
         button.addEventListener("click", () => {
@@ -1673,8 +1778,9 @@
               if (animation.id === "project-filter") animation.cancel();
             });
 
-            const show = button.dataset.filter === "all" ||
-              project.dataset.category === button.dataset.filter;
+            const show = button.dataset.filter !== "short-form" &&
+              (button.dataset.filter === "all" ||
+                project.dataset.category === button.dataset.filter);
 
             project.hidden = !show;
 
@@ -1699,11 +1805,17 @@
             }
           });
 
+          reelSection.hidden = button.dataset.filter !== "all" &&
+            button.dataset.filter !== "short-form";
+          if (button.dataset.filter === "short-form") visibleCount = reelVideos.length;
+
           document.querySelector(".count").textContent =
             `(${String(visibleCount).padStart(2, "0")})`;
 
           document.querySelector("#filter-status").textContent =
-            `${visibleCount} ${visibleCount === 1 ? "project" : "projects"} shown.`;
+            button.dataset.filter === "short-form"
+              ? `${visibleCount} short form reels shown.`
+              : `${visibleCount} ${visibleCount === 1 ? "project" : "projects"} shown.`;
         });
       });
 
@@ -1718,6 +1830,156 @@
         player.dataset.sourcesAttached = "true";
         player.load();
       }
+
+      // Load and preview only the vertical reels currently near the viewport.
+      if ("IntersectionObserver" in window) {
+        const reelObserver = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            const player = entry.target;
+
+            if (entry.isIntersecting) {
+              attachLocalSources(player);
+              player.play().catch(() => {});
+            } else {
+              player.pause();
+            }
+          });
+        }, { rootMargin: "120px 0px", threshold: .35 });
+
+        reelVideos.forEach(player => reelObserver.observe(player));
+      }
+
+      // Native drag/swipe stays available; arrows wrap at either end for a loop.
+      const reelRail = document.querySelector(".reel-rail");
+      const reelPrevious = document.querySelector(".reel-arrow-prev");
+      const reelNext = document.querySelector(".reel-arrow-next");
+      let reelScrollTimer;
+      let reelLooping = false;
+
+      function wrapReels(left) {
+        reelLooping = true;
+        reelRail.scrollTo({ left, behavior: "auto" });
+        window.setTimeout(() => { reelLooping = false; }, 220);
+      }
+
+      function reelStep() {
+        const card = reelRail.querySelector(".reel-card");
+        return card.getBoundingClientRect().width + parseFloat(getComputedStyle(reelRail).columnGap);
+      }
+
+      function moveReels(direction) {
+        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
+        const atStart = reelRail.scrollLeft <= 2;
+        const atEnd = reelRail.scrollLeft >= maximum - 2;
+
+        if (direction < 0 && atStart) {
+          wrapReels(maximum - 1);
+          return;
+        }
+
+        if (direction > 0 && atEnd) {
+          wrapReels(1);
+          return;
+        }
+
+        reelRail.scrollBy({ left: direction * reelStep(), behavior: "smooth" });
+      }
+
+      reelPrevious.addEventListener("click", () => moveReels(-1));
+      reelNext.addEventListener("click", () => moveReels(1));
+      let reelDragging = false;
+      let reelDragStartX = 0;
+      let reelDragStartScroll = 0;
+
+      reelRail.addEventListener("pointerdown", event => {
+        if (!event.isPrimary || event.pointerType === "touch") return;
+        reelDragging = true;
+        reelDragStartX = event.clientX;
+        reelDragStartScroll = reelRail.scrollLeft;
+        reelRail.classList.add("is-dragging");
+        reelRail.setPointerCapture(event.pointerId);
+      });
+
+      reelRail.addEventListener("pointermove", event => {
+        if (!reelDragging) return;
+        event.preventDefault();
+        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
+        const nextPosition = reelDragStartScroll + (event.clientX - reelDragStartX);
+
+        if (nextPosition < 0) {
+          wrapReels(maximum - 1);
+          reelDragStartX = event.clientX;
+          reelDragStartScroll = maximum - 1;
+          return;
+        }
+
+        if (nextPosition > maximum) {
+          wrapReels(1);
+          reelDragStartX = event.clientX;
+          reelDragStartScroll = 1;
+          return;
+        }
+
+        reelRail.scrollLeft = nextPosition;
+      });
+
+      function finishReelDrag(event) {
+        if (!reelDragging) return;
+        reelDragging = false;
+        reelRail.classList.remove("is-dragging");
+        if (reelRail.hasPointerCapture(event.pointerId)) reelRail.releasePointerCapture(event.pointerId);
+
+        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
+        if (reelRail.scrollLeft <= 1) wrapReels(maximum - 1);
+        if (reelRail.scrollLeft >= maximum - 1) wrapReels(1);
+      }
+
+      reelRail.addEventListener("pointerup", finishReelDrag);
+      reelRail.addEventListener("pointercancel", finishReelDrag);
+      window.addEventListener("pointerup", finishReelDrag);
+      window.addEventListener("pointercancel", finishReelDrag);
+
+      // Touch fallback: explicitly wraps edge swipes on mobile browsers.
+      let reelTouchStartX = 0;
+      let reelTouchStartScroll = 0;
+      let reelTouchDragging = false;
+
+      reelRail.addEventListener("touchstart", event => {
+        reelTouchDragging = true;
+        reelTouchStartX = event.touches[0].clientX;
+        reelTouchStartScroll = reelRail.scrollLeft;
+        reelRail.classList.add("is-dragging");
+      }, { passive: true });
+
+      reelRail.addEventListener("touchmove", event => {
+        if (!reelTouchDragging) return;
+        event.preventDefault();
+        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
+        const nextPosition = reelTouchStartScroll +
+          (event.touches[0].clientX - reelTouchStartX);
+        reelRail.scrollLeft = Math.max(0, Math.min(maximum, nextPosition));
+      }, { passive: false });
+
+      reelRail.addEventListener("touchend", event => {
+        if (!reelTouchDragging) return;
+        reelTouchDragging = false;
+        reelRail.classList.remove("is-dragging");
+        const delta = event.changedTouches[0].clientX - reelTouchStartX;
+        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
+
+        if (delta < -35 && reelTouchStartScroll <= 2) wrapReels(maximum - 1);
+        if (delta > 35 && reelTouchStartScroll >= maximum - 2) wrapReels(1);
+      }, { passive: true });
+
+      reelRail.addEventListener("scroll", () => {
+        if (reelLooping || reelDragging || reelTouchDragging) return;
+        clearTimeout(reelScrollTimer);
+        reelScrollTimer = setTimeout(() => {
+          const maximum = reelRail.scrollWidth - reelRail.clientWidth;
+          if (reelRail.scrollLeft <= 1) wrapReels(maximum - 1);
+          if (reelRail.scrollLeft >= maximum - 1) wrapReels(1);
+        }, 180);
+      }, { passive: true });
 
       function watchSourceFailures(player, onFailure) {
         const sources = [...player.querySelectorAll("source")];
