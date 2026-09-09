@@ -395,7 +395,7 @@
     .reels-hint { display: flex; align-items: center; gap: 10px; color: var(--muted); font: 9px/1 "Space Mono", monospace; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
     .reels-hint span { color: var(--text); font-size: 17px; letter-spacing: 0; }
     .reel-viewport { position: relative; }
-    .reel-rail { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 100px) / 5); gap: 25px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline mandatory; touch-action: pan-y; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #565950 transparent; padding: 2px 0 16px; cursor: grab; }
+    .reel-rail { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 100px) / 5); gap: 25px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline mandatory; touch-action: pan-x; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #565950 transparent; padding: 2px 0 16px; cursor: grab; }
     .reel-rail.is-dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
     .reel-arrow { position: absolute; z-index: 3; top: 50%; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(244,243,240,.34); border-radius: 50%; background: rgba(8,9,9,.2); color: var(--text); backdrop-filter: blur(8px); transform: translateY(-50%); transition: background .3s, border-color .3s, opacity .3s; animation: reel-arrow-pulse 2.8s ease-in-out infinite; }
     .reel-arrow:hover:not(:disabled) { border-color: var(--text); background: rgba(244,243,240,.16); }
@@ -1912,34 +1912,6 @@
       reelRail.addEventListener("pointercancel", finishReelDrag);
       window.addEventListener("pointerup", finishReelDrag);
       window.addEventListener("pointercancel", finishReelDrag);
-
-      // Touch fallback for reliable horizontal swiping on mobile browsers.
-      let reelTouchStartX = 0;
-      let reelTouchStartScroll = 0;
-      let reelTouchDragging = false;
-
-      reelRail.addEventListener("touchstart", event => {
-        reelTouchDragging = true;
-        reelTouchStartX = event.touches[0].clientX;
-        reelTouchStartScroll = reelRail.scrollLeft;
-        reelRail.classList.add("is-dragging");
-      }, { passive: true });
-
-      reelRail.addEventListener("touchmove", event => {
-        if (!reelTouchDragging) return;
-        event.preventDefault();
-        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
-        const nextPosition = reelTouchStartScroll -
-          (event.touches[0].clientX - reelTouchStartX);
-        reelRail.scrollLeft = Math.max(0, Math.min(maximum, nextPosition));
-      }, { passive: false });
-
-      reelRail.addEventListener("touchend", event => {
-        if (!reelTouchDragging) return;
-        reelTouchDragging = false;
-        reelRail.classList.remove("is-dragging");
-        updateReelArrows();
-      }, { passive: true });
 
       reelRail.addEventListener("scroll", updateReelArrows, { passive: true });
       window.addEventListener("resize", updateReelArrows);
