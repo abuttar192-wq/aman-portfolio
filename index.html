@@ -398,7 +398,8 @@
     .reel-rail { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 100px) / 5); gap: 25px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline mandatory; touch-action: pan-y; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #565950 transparent; padding: 2px 0 16px; cursor: grab; }
     .reel-rail.is-dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
     .reel-arrow { position: absolute; z-index: 3; top: 50%; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(244,243,240,.34); border-radius: 50%; background: rgba(8,9,9,.2); color: var(--text); backdrop-filter: blur(8px); transform: translateY(-50%); transition: background .3s, border-color .3s, opacity .3s; animation: reel-arrow-pulse 2.8s ease-in-out infinite; }
-    .reel-arrow:hover { border-color: var(--text); background: rgba(244,243,240,.16); }
+    .reel-arrow:hover:not(:disabled) { border-color: var(--text); background: rgba(244,243,240,.16); }
+    .reel-arrow:disabled { opacity: .25; cursor: default; animation: none; }
     .reel-arrow svg { width: 17px; height: 17px; }
     .reel-arrow-prev { left: 12px; }
     .reel-arrow-next { right: 12px; animation-delay: 1.4s; }
@@ -1849,18 +1850,10 @@
         reelVideos.forEach(player => reelObserver.observe(player));
       }
 
-      // Native drag/swipe stays available; arrows wrap at either end for a loop.
+      // Native drag/swipe stays available with normal, non-looping boundaries.
       const reelRail = document.querySelector(".reel-rail");
       const reelPrevious = document.querySelector(".reel-arrow-prev");
       const reelNext = document.querySelector(".reel-arrow-next");
-      let reelScrollTimer;
-      let reelLooping = false;
-
-      function wrapReels(left) {
-        reelLooping = true;
-        reelRail.scrollTo({ left, behavior: "auto" });
-        window.setTimeout(() => { reelLooping = false; }, 220);
-      }
 
       function reelStep() {
         const card = reelRail.querySelector(".reel-card");
@@ -1872,17 +1865,15 @@
         const atStart = reelRail.scrollLeft <= 2;
         const atEnd = reelRail.scrollLeft >= maximum - 2;
 
-        if (direction < 0 && atStart) {
-          wrapReels(maximum - 1);
-          return;
-        }
-
-        if (direction > 0 && atEnd) {
-          wrapReels(1);
-          return;
-        }
+        if ((direction < 0 && atStart) || (direction > 0 && atEnd)) return;
 
         reelRail.scrollBy({ left: direction * reelStep(), behavior: "smooth" });
+      }
+
+      function updateReelArrows() {
+        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
+        reelPrevious.disabled = reelRail.scrollLeft <= 2;
+        reelNext.disabled = reelRail.scrollLeft >= maximum - 2;
       }
 
       reelPrevious.addEventListener("click", () => moveReels(-1));
@@ -1905,22 +1896,7 @@
         event.preventDefault();
         const maximum = reelRail.scrollWidth - reelRail.clientWidth;
         const nextPosition = reelDragStartScroll - (event.clientX - reelDragStartX);
-
-        if (nextPosition < 0) {
-          wrapReels(maximum - 1);
-          reelDragStartX = event.clientX;
-          reelDragStartScroll = maximum - 1;
-          return;
-        }
-
-        if (nextPosition > maximum) {
-          wrapReels(1);
-          reelDragStartX = event.clientX;
-          reelDragStartScroll = 1;
-          return;
-        }
-
-        reelRail.scrollLeft = nextPosition;
+        reelRail.scrollLeft = Math.max(0, Math.min(maximum, nextPosition));
       });
 
       function finishReelDrag(event) {
@@ -1929,9 +1905,7 @@
         reelRail.classList.remove("is-dragging");
         if (reelRail.hasPointerCapture(event.pointerId)) reelRail.releasePointerCapture(event.pointerId);
 
-        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
-        if (reelRail.scrollLeft <= 1) wrapReels(maximum - 1);
-        if (reelRail.scrollLeft >= maximum - 1) wrapReels(1);
+        updateReelArrows();
       }
 
       reelRail.addEventListener("pointerup", finishReelDrag);
@@ -1939,7 +1913,7 @@
       window.addEventListener("pointerup", finishReelDrag);
       window.addEventListener("pointercancel", finishReelDrag);
 
-      // Touch fallback: explicitly wraps edge swipes on mobile browsers.
+      // Touch fallback for reliable horizontal swiping on mobile browsers.
       let reelTouchStartX = 0;
       let reelTouchStartScroll = 0;
       let reelTouchDragging = false;
@@ -1964,22 +1938,12 @@
         if (!reelTouchDragging) return;
         reelTouchDragging = false;
         reelRail.classList.remove("is-dragging");
-        const delta = event.changedTouches[0].clientX - reelTouchStartX;
-        const maximum = reelRail.scrollWidth - reelRail.clientWidth;
-
-        if (delta < -35 && reelTouchStartScroll >= maximum - 2) wrapReels(1);
-        if (delta > 35 && reelTouchStartScroll <= 2) wrapReels(maximum - 1);
+        updateReelArrows();
       }, { passive: true });
 
-      reelRail.addEventListener("scroll", () => {
-        if (reelLooping || reelDragging || reelTouchDragging) return;
-        clearTimeout(reelScrollTimer);
-        reelScrollTimer = setTimeout(() => {
-          const maximum = reelRail.scrollWidth - reelRail.clientWidth;
-          if (reelRail.scrollLeft <= 1) wrapReels(maximum - 1);
-          if (reelRail.scrollLeft >= maximum - 1) wrapReels(1);
-        }, 180);
-      }, { passive: true });
+      reelRail.addEventListener("scroll", updateReelArrows, { passive: true });
+      window.addEventListener("resize", updateReelArrows);
+      updateReelArrows();
 
       function watchSourceFailures(player, onFailure) {
         const sources = [...player.querySelectorAll("source")];
