@@ -407,8 +407,9 @@
       0%, 100% { opacity: .58; transform: translateY(-50%) scale(1); }
       50% { opacity: 1; transform: translateY(-50%) scale(1.12); }
     }
-    .reel-card { position: relative; min-width: 0; aspect-ratio: 9 / 16; overflow: hidden; scroll-snap-align: start; border-radius: 20px; background: var(--surface); isolation: isolate; }
-    .reel-card video { display: block; width: 100%; height: 100%; object-fit: cover; background: #161816; pointer-events: none; }
+    .reel-card { position: relative; min-width: 0; aspect-ratio: 9 / 16; overflow: hidden; scroll-snap-align: start; border-radius: 20px; background-color: var(--surface); background-position: center; background-size: cover; background-repeat: no-repeat; isolation: isolate; }
+    .reel-card video { display: block; width: 100%; height: 100%; object-fit: cover; background: transparent; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+    .reel-card.is-playing video { opacity: 1; }
     .reel-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(transparent 52%, rgba(0,0,0,.62)); }
     .reel-card-label { position: absolute; z-index: 1; left: 18px; right: 18px; bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text); font: 10px/1.4 "Space Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
     .reel-card-label span:last-child { color: var(--muted); font-size: 9px; }
@@ -1687,6 +1688,13 @@
       const detailSection = document.querySelector(".project-details");
       const testimonialVideos = [...document.querySelectorAll(".testimonial-video")];
       const reelVideos = [...document.querySelectorAll(".reel-card video")];
+
+      reelVideos.forEach(player => {
+        const card = player.closest(".reel-card");
+        card.style.backgroundImage = `url("${player.poster}")`;
+        player.addEventListener("playing", () => card.classList.add("is-playing"));
+        player.addEventListener("error", () => card.classList.remove("is-playing"));
+      });
 
       let heroInView = true;
       let heroUserPaused = false;
