@@ -1904,7 +1904,7 @@
         if (!reelDragging) return;
         event.preventDefault();
         const maximum = reelRail.scrollWidth - reelRail.clientWidth;
-        const nextPosition = reelDragStartScroll + (event.clientX - reelDragStartX);
+        const nextPosition = reelDragStartScroll - (event.clientX - reelDragStartX);
 
         if (nextPosition < 0) {
           wrapReels(maximum - 1);
@@ -1955,7 +1955,7 @@
         if (!reelTouchDragging) return;
         event.preventDefault();
         const maximum = reelRail.scrollWidth - reelRail.clientWidth;
-        const nextPosition = reelTouchStartScroll +
+        const nextPosition = reelTouchStartScroll -
           (event.touches[0].clientX - reelTouchStartX);
         reelRail.scrollLeft = Math.max(0, Math.min(maximum, nextPosition));
       }, { passive: false });
@@ -1967,8 +1967,8 @@
         const delta = event.changedTouches[0].clientX - reelTouchStartX;
         const maximum = reelRail.scrollWidth - reelRail.clientWidth;
 
-        if (delta < -35 && reelTouchStartScroll <= 2) wrapReels(maximum - 1);
-        if (delta > 35 && reelTouchStartScroll >= maximum - 2) wrapReels(1);
+        if (delta < -35 && reelTouchStartScroll >= maximum - 2) wrapReels(1);
+        if (delta > 35 && reelTouchStartScroll <= 2) wrapReels(maximum - 1);
       }, { passive: true });
 
       reelRail.addEventListener("scroll", () => {
