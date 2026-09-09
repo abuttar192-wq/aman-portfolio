@@ -407,9 +407,12 @@
       0%, 100% { opacity: .58; transform: translateY(-50%) scale(1); }
       50% { opacity: 1; transform: translateY(-50%) scale(1.12); }
     }
-    .reel-card { position: relative; min-width: 0; aspect-ratio: 9 / 16; overflow: hidden; scroll-snap-align: start; border-radius: 20px; background-color: var(--surface); background-position: center; background-size: cover; background-repeat: no-repeat; isolation: isolate; }
+    .reel-card { position: relative; min-width: 0; aspect-ratio: 9 / 16; overflow: hidden; scroll-snap-align: start; border-radius: 20px; background-color: var(--surface); background-position: center; background-size: cover; background-repeat: no-repeat; isolation: isolate; cursor: pointer; }
     .reel-card video { display: block; width: 100%; height: 100%; object-fit: cover; background: transparent; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
     .reel-card.is-playing video { opacity: 1; }
+    .reel-card::before { content: "▶"; position: absolute; z-index: 2; top: 50%; left: 50%; width: 48px; height: 48px; display: grid; place-items: center; padding-left: 3px; border: 1px solid rgba(244,243,240,.72); border-radius: 50%; background: rgba(8,9,9,.24); color: var(--text); font-size: 13px; transform: translate(-50%, -50%); backdrop-filter: blur(8px); pointer-events: none; transition: opacity .3s, transform .3s, background .3s; }
+    .reel-card:hover::before { background: rgba(244,243,240,.18); transform: translate(-50%, -50%) scale(1.08); }
+    .reel-card.is-playing::before { opacity: 0; pointer-events: none; }
     .reel-card::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(transparent 52%, rgba(0,0,0,.62)); }
     .reel-card-label { position: absolute; z-index: 1; left: 18px; right: 18px; bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text); font: 10px/1.4 "Space Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
     .reel-card-label span:last-child { color: var(--muted); font-size: 9px; }
@@ -1692,7 +1695,35 @@
       reelVideos.forEach(player => {
         const card = player.closest(".reel-card");
         card.style.backgroundImage = `url("${player.poster}")`;
+        card.setAttribute("role", "button");
+        card.tabIndex = 0;
+        card.setAttribute("aria-label", `Play ${card.querySelector(".reel-card-label span").textContent}`);
+
+        const playReel = async () => {
+          reelVideos.forEach(other => {
+            if (other !== player) {
+              other.pause();
+              other.closest(".reel-card").classList.remove("is-playing");
+            }
+          });
+
+          attachLocalSources(player);
+          try {
+            await player.play();
+          } catch {
+            card.classList.remove("is-playing");
+          }
+        };
+
+        card.addEventListener("click", playReel);
+        card.addEventListener("keydown", event => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          playReel();
+        });
+
         player.addEventListener("playing", () => card.classList.add("is-playing"));
+        player.addEventListener("pause", () => card.classList.remove("is-playing"));
         player.addEventListener("error", () => card.classList.remove("is-playing"));
       });
 
@@ -1840,16 +1871,13 @@
         player.load();
       }
 
-      // Load and preview only the vertical reels currently near the viewport.
+      // Keep offscreen reels paused; playback starts only from an explicit click.
       if ("IntersectionObserver" in window) {
         const reelObserver = new IntersectionObserver(entries => {
           entries.forEach(entry => {
             const player = entry.target;
 
-            if (entry.isIntersecting) {
-              attachLocalSources(player);
-              player.play().catch(() => {});
-            } else {
+            if (!entry.isIntersecting) {
               player.pause();
             }
           });
@@ -1887,12 +1915,16 @@
       reelPrevious.addEventListener("click", () => moveReels(-1));
       reelNext.addEventListener("click", () => moveReels(1));
       let reelDragging = false;
+      let reelPointerMoved = false;
+      let reelPointerCard = null;
       let reelDragStartX = 0;
       let reelDragStartScroll = 0;
 
       reelRail.addEventListener("pointerdown", event => {
         if (!event.isPrimary || event.pointerType === "touch") return;
         reelDragging = true;
+        reelPointerMoved = false;
+        reelPointerCard = event.target.closest(".reel-card");
         reelDragStartX = event.clientX;
         reelDragStartScroll = reelRail.scrollLeft;
         reelRail.classList.add("is-dragging");
@@ -1902,6 +1934,7 @@
       reelRail.addEventListener("pointermove", event => {
         if (!reelDragging) return;
         event.preventDefault();
+        if (Math.abs(event.clientX - reelDragStartX) > 5) reelPointerMoved = true;
         const maximum = reelRail.scrollWidth - reelRail.clientWidth;
         const nextPosition = reelDragStartScroll - (event.clientX - reelDragStartX);
         reelRail.scrollLeft = Math.max(0, Math.min(maximum, nextPosition));
@@ -1914,6 +1947,8 @@
         if (reelRail.hasPointerCapture(event.pointerId)) reelRail.releasePointerCapture(event.pointerId);
 
         updateReelArrows();
+        if (!reelPointerMoved) reelPointerCard?.click();
+        reelPointerCard = null;
       }
 
       reelRail.addEventListener("pointerup", finishReelDrag);
