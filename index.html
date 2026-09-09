@@ -643,6 +643,13 @@
       background: #000;
       object-fit: contain;
     }
+    .video-dialog > iframe.dialog-youtube {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      background: #000;
+    }
     .video-dialog.has-project > video { max-height: 56svh; }
     .dialog-caption { padding: 15px 22px; font-size: 11px; line-height: 1.7; color: var(--muted); }
     .project-details {
@@ -1448,6 +1455,13 @@
 
     <!-- Video always appears before the project description and credits. -->
     <video class="dialog-video" controls playsinline preload="none"></video>
+    <iframe
+      class="dialog-youtube"
+      title="Showreel"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen
+      hidden
+    ></iframe>
     <p class="dialog-caption" role="status"></p>
 
     <section class="project-details" aria-labelledby="project-detail-title" hidden>
@@ -1495,8 +1509,8 @@
       const films = {
         showreel: {
           title: "Showreel — A little of everything",
-          video: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-          demo: true
+          youtube: "https://www.youtube.com/embed/bq68kMsqvF8?autoplay=1&rel=0",
+          demo: false
         },
         beyond: {
           title: "Beyond the ordinary",
@@ -1564,6 +1578,7 @@
 
       const dialog = document.querySelector(".video-dialog");
       const dialogVideo = document.querySelector(".dialog-video");
+      const dialogYoutube = document.querySelector(".dialog-youtube");
       const dialogCaption = document.querySelector(".dialog-caption");
       const detailSection = document.querySelector(".project-details");
       const testimonialVideos = [...document.querySelectorAll(".testimonial-video")];
@@ -1878,13 +1893,24 @@
             dialogVideo.append(track);
           }
 
-          dialogVideo.src = film.video;
+          const usesYoutube = Boolean(film.youtube);
+          dialogVideo.hidden = usesYoutube;
+          dialogYoutube.hidden = !usesYoutube;
+          dialogYoutube.src = usesYoutube ? film.youtube : "";
+          if (usesYoutube) {
+            dialogVideo.removeAttribute("src");
+            dialogVideo.load();
+          } else {
+            dialogVideo.src = film.video;
+          }
           dialog.showModal();
           dialog.scrollTop = 0;
           document.body.classList.add("locked");
 
           testimonialVideos.forEach(player => player.pause());
           syncHeroPlayback();
+
+          if (usesYoutube) return;
 
           dialogVideo.play().catch(error => {
             if (
@@ -1917,6 +1943,9 @@
         playbackRequest++;
         dialogVideo.pause();
         dialogVideo.removeAttribute("src");
+        dialogVideo.hidden = false;
+        dialogYoutube.removeAttribute("src");
+        dialogYoutube.hidden = true;
         dialogVideo.querySelectorAll("track").forEach(track => track.remove());
         dialogVideo.load();
         document.body.classList.remove("locked");
